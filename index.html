@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+<title>ArchServ Parser</title>
+<style>
+#content {
+  width: 100%;
+  height: 640px;
+  font-family: monospace;
+  font-size: 16px;
+}
+</style>
+<body>
+
+  <div id="controls">
+    <input id="input_file" style="display: none;" type="file" onchange="javascript:parseFile(event);" />
+    <button onclick="javascript:document.getElementById('input_file').click();">Select...</button>
+  </div>
+
+  <textarea id="content"></textarea>
+
+  <script src="archserv.js"></script>
+  <script>
+
+    function reset() {
+      var node = document.getElementById('content');
+      node.value = '';
+    }
+
+    function parseFile(event) {
+      var reader = new FileReader();
+      reader.onloadend = function() {
+        var parser = new ArchServParser();
+        var result = parser.parse(reader.result);
+        var node = document.getElementById('content');
+        node.value = '';
+        for (var i = 0; i < parser.result.property.length; ++i) {
+          var point = parser.result.property[i];
+          var text = '';
+          text += point;
+          text += "\n";
+          node.value += text;
+        }
+      };
+      reader.readAsText(event.target.files[0]);
+    }
+
+    reset(); // clear textarea
+
+  </script>
+</body>
+</html>
