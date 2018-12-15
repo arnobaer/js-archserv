@@ -1,0 +1,21 @@
+{
+  "name": "js-archserv",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "rollup -c"
+  },
+  "devDependencies": {
+    "rollup": "^0.67.4",
+    "rollup-plugin-json": "^3.1.0",
+    "rollup-plugin-uglify": "^6.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/arnobaer/js-archserv.git"
+  },
+  "keywords": [
+    "gis",
+    "archaeology"
+  ],
+  "license": "GPL-3.0+"
+}
