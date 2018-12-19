@@ -9,6 +9,10 @@ $ npm update
 $ npm run build
 ```
 
+## Quick start
+
+To view an ArchServ file just open `file://test/index.html` in a web browser.
+
 ## Usage
 
 ```html

@@ -206,6 +206,8 @@ var archserv = (function() {
   return {
     Types: Types,
     PointTypes: PointTypes,
+    LineTypes: LineTypes,
+    PolygonTypes: PolygonTypes,
     Parser: Parser
   }
 
