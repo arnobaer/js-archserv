@@ -5,7 +5,7 @@ export default {
   input: 'src/archserv.js',
   output: {
     file: 'dist/archserv.js',
-    name: 'ArchServParser',
+    name: 'archserv',
     format: 'iife'
   },
   plugins: [ json(), uglify() ]

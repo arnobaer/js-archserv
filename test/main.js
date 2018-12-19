@@ -36,38 +36,61 @@ L.control.scale({position: 'topright'}).addTo(map);
 var group = L.featureGroup().addTo(map);
 
 function updateMap(source) {
-  var parser = new ArchServParser();
+  var parser = new archserv.Parser();
   parser.parse(source);
   var src = proj4(document.getElementById('crs').value);
   var dst = proj4('EPSG:4326');
-  var json = parser.toGeoJSON(src, dst);
+  var featureCollection = parser.toGeoJSON(src, src);
+  var featureCollectionGoogle = parser.toGeoJSON(src, dst);
   var node = document.getElementById('source');
   node.value = '';
-  for (var i = 0; i < parser.result.property.length; ++i) {
-    var point = parser.result.property[i];
-    var text = '';
-    text += point;
-    text += "\n";
-    node.value += text;
-  }
-  document.getElementById('geoJSON').innerText = JSON.stringify(json, null, '  ');
-;
+  parser.result.stations.forEach(function(point) {
+    node.value += point + "\n";
+  });
+  parser.result.features.forEach(function(group) {
+    group.forEach(function(point) {
+      node.value += point + "\n";
+    });
+  });
+  document.getElementById('geoJSON').innerText = JSON.stringify(featureCollection, null, '  ');
   // Remove all previous layers
   group.clearLayers();
   function markerOptions(feature) {
+    var type = feature.properties.type;
+    if (type === undefined) type = 0;
     return {
       radius: 8,
       color: "black",
-      fillColor: {0:'grey',1:'orange',11:'blue',71:'red',81:'green',91:'magenta'}[feature.properties.type],
+      fillColor: {0:'grey',1:'orange',11:'blue',71:'red',81:'green',91:'magenta'}[type],
       weight: 1,
       opacity: 1,
       fillOpacity: 0.8
     };
   }
-  group.addLayer(L.geoJSON(json, {
+  group.addLayer(L.geoJSON(featureCollectionGoogle, {
     pointToLayer: function (feature, latlng) {
-      return L.circleMarker(latlng, markerOptions(feature))
-        .bindPopup('Key: ' + feature.properties.key + '<br/>Height: ' + feature.properties.z + ' m<br/>Code: ' + feature.properties.code);;
+      return L.circleMarker(latlng, markerOptions(feature));
+    },
+    style: function(feature) {
+      switch (feature.properties.type) {
+        case archserv.Types.lineOpen: return { color: "magenta" };
+        case archserv.Types.lineClosed: return { color: "magenta" };
+        case archserv.Types.borderOpen: return { color: "blue" };
+        case archserv.Types.borderClosed: return { color: "blue" };
+      }
+    },
+    onEachFeature: function(feature, layer) {
+      if (feature.properties && feature.properties.type) {
+        if (archserv.PointTypes.includes(feature.properties.type)) {
+          layer.bindPopup('Context: ' + feature.properties.context + '<br/>Type: ' + feature.properties.type + '<br/>Height: ' + feature.geometry.coordinates[2] + ' m<br/>Code: ' + feature.properties.code);
+        }
+        else {
+          layer.bindPopup('Context: ' + feature.properties.context + '<br/>Type: ' + feature.properties.type + '<br/>Code: ' + feature.properties.code);
+        }
+      }
+      else if (feature.properties && feature.properties.code) {
+        layer.bindPopup('Station: ' + feature.properties.station + '<br/>Height: ' + feature.geometry.coordinates[2] + ' m<br/>Code: ' + feature.properties.code);
+      }
     }
   }));
   map.fitBounds(group.getBounds());
@@ -78,7 +101,7 @@ function updateCRS() {
   key = document.getElementById('crs').value;
   crs = proj4(key);
   var content = document.getElementById('source').value;
-  if (content != '')
+  if (content == false)
     updateMap(content);
 }
 
@@ -91,3 +114,8 @@ function showGeoJSON() {
   document.getElementById('source').style.display = 'none';
   document.getElementById('geoJSON').style.display = 'initial';
 }
+
+document.getElementById('download').onclick = function(elem) {
+  var blob = new Blob([document.getElementById('geoJSON').innerText], { type: 'application/json' });
+  this.href = window.URL.createObjectURL(blob);
+};
